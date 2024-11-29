@@ -13,6 +13,7 @@ public record User (
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         Long id,
         String name,
+        @Column(unique = true)
         String email,
         String phone,
         LocalDate birthDate,
