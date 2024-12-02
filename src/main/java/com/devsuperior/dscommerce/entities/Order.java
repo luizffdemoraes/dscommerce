@@ -3,6 +3,7 @@ package com.devsuperior.dscommerce.entities;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -25,4 +26,8 @@ public record Order(
 
         @OneToMany(mappedBy = "id.order")
         Set<OrderItem> items) {
+
+        public List<Product> getProducts() {
+                return items.stream().map(OrderItem::product).toList();
+        }
 }
