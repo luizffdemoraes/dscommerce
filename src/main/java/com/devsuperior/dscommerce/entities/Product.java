@@ -20,14 +20,17 @@ public record Product(
         @JoinTable(name = "tb_product_category",
                 joinColumns = @JoinColumn(name = "product_id"),
                 inverseJoinColumns = @JoinColumn(name = "category_id"))
-        Set<Category> categories) {
+        Set<Category> categories,
+        @OneToMany(mappedBy = "id.product")
+        Set<OrderItem> items) {
 
-    public Product(Long id, String name, String description, Double price, String imgUrl, Set<Category> categories) {
+    public Product(Long id, String name, String description, Double price, String imgUrl, Set<Category> categories, Set<OrderItem> items) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.imgUrl = imgUrl;
-        this.categories = new HashSet<>();
+        this.categories = categories;
+        this.items = items;
     }
 }
