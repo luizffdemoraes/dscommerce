@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -29,5 +30,18 @@ public record Order(
 
         public List<Product> getProducts() {
                 return items.stream().map(OrderItem::product).toList();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+                if (o == null || getClass() != o.getClass()) return false;
+
+                Order order = (Order) o;
+                return Objects.equals(id, order.id);
+        }
+
+        @Override
+        public int hashCode() {
+                return Objects.hashCode(id);
         }
 }
