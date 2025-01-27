@@ -30,6 +30,9 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "client")
     private List<Order> orders;
 
+    public User() {
+    }
+
     public User(Long id, String name, String email, String phone, LocalDate birthDate, String password, List<Order> orders) {
         this.id = id;
         this.name = name;
@@ -102,6 +105,19 @@ public class User implements UserDetails {
 
     public void setOrders(List<Order> orders) {
         this.orders = orders;
+    }
+
+    public void addRole(Role role) {
+        this.roles.add(role);
+    }
+
+    public boolean hasRole(String roleName) {
+        for (Role role : roles) {
+            if (role.getAuthority().equals(roleName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
