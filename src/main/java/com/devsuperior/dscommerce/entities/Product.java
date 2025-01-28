@@ -52,13 +52,7 @@ public class Product {
     }
 
     public Product(ProductDTO dto) {
-        this.name = dto.getName();
-        this.description = dto.getDescription();
-        this.price = dto.getPrice();
-        this.imgUrl = dto.getImgUrl();
-    }
-
-    public void updateFromDTO(ProductDTO dto) {
+        this.id = dto.getId();
         this.name = dto.getName();
         this.description = dto.getDescription();
         this.price = dto.getPrice();
@@ -114,7 +108,14 @@ public class Product {
     }
 
     public List<Order> getOrders() {
-        return items.stream().map(OrderItem::order).toList();
+        return items.stream().map(x -> x.getOrder()).toList();
+    }
+
+    public void updateFromDTO(ProductDTO dto) {
+        this.name = dto.getName();
+        this.description = dto.getDescription();
+        this.price = dto.getPrice();
+        this.imgUrl = dto.getImgUrl();
     }
 
     @Override

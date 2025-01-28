@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -44,6 +43,7 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Acce
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.web.SecurityFilterChain;
+
 import com.devsuperior.dscommerce.config.customgrant.CustomPasswordAuthenticationConverter;
 import com.devsuperior.dscommerce.config.customgrant.CustomPasswordAuthenticationProvider;
 import com.devsuperior.dscommerce.config.customgrant.CustomUserAuthorities;
@@ -51,17 +51,19 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 @Configuration
 public class AuthorizationServerConfig {
+
     @Value("${security.client-id}")
     private String clientId;
+
     @Value("${security.client-secret}")
     private String clientSecret;
+
     @Value("${security.jwt.duration}")
     private Integer jwtDurationSeconds;
+
     @Autowired
     private UserDetailsService userDetailsService;
 
@@ -69,33 +71,14 @@ public class AuthorizationServerConfig {
     @Order(2)
     public SecurityFilterChain asSecurityFilterChain(HttpSecurity http) throws Exception {
 
-        // Configuração explícita do Authorization Server
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                OAuth2AuthorizationServerConfigurer.authorizationServer().oidc(Customizer.withDefaults());
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
-        // Configuração do SecurityFilterChain
-        http
-                .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-                .with(authorizationServerConfigurer, Customizer.withDefaults())
-                .authorizeHttpRequests((authorize) -> authorize.anyRequest().authenticated())
-                .exceptionHandling((exceptions) -> exceptions.defaultAuthenticationEntryPointFor(
-                        new LoginUrlAuthenticationEntryPoint("/login"), new MediaTypeRequestMatcher(MediaType.TEXT_HTML)));
-
-        // Customização do Token Endpoint
-        authorizationServerConfigurer
+        // @formatter:off
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .tokenEndpoint(tokenEndpoint -> tokenEndpoint
                         .accessTokenRequestConverter(new CustomPasswordAuthenticationConverter())
-                        .authenticationProvider(
-                                new CustomPasswordAuthenticationProvider(
-                                        authorizationService(),
-                                        tokenGenerator(),
-                                        userDetailsService,
-                                        passwordEncoder()
-                                )
-                        )
-                );
+                        .authenticationProvider(new CustomPasswordAuthenticationProvider(authorizationService(), tokenGenerator(), userDetailsService, passwordEncoder())));
 
-        // Configuração do Resource Server para suporte a JWT
         http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()));
         // @formatter:on
 
@@ -131,6 +114,7 @@ public class AuthorizationServerConfig {
                 .clientSettings(clientSettings())
                 .build();
         // @formatter:on
+
         return new InMemoryRegisteredClientRepository(registeredClient);
     }
 
@@ -209,5 +193,4 @@ public class AuthorizationServerConfig {
         }
         return keyPair;
     }
-
 }
