@@ -1,7 +1,9 @@
 package com.devsuperior.dscommerce.services;
 
+import com.devsuperior.dscommerce.dto.CategoryDTO;
 import com.devsuperior.dscommerce.dto.ProductDTO;
 import com.devsuperior.dscommerce.dto.ProductMinDTO;
+import com.devsuperior.dscommerce.entities.Category;
 import com.devsuperior.dscommerce.entities.Product;
 import com.devsuperior.dscommerce.repositories.ProductRepository;
 import com.devsuperior.dscommerce.services.exceptions.DatabaseException;
@@ -35,9 +37,10 @@ public class ProductService {
 
     @Transactional
     public ProductDTO insert(ProductDTO dto) {
-        Product entity = new Product(dto);
-        Product product = repository.save(entity);
-        return new ProductDTO(product);
+        Product entity = new Product();
+        copyDtoToEntity(dto, entity);
+        entity = repository.save(entity);
+        return new ProductDTO(entity);
     }
 
     @Transactional
@@ -62,6 +65,20 @@ public class ProductService {
         }
         catch (DataIntegrityViolationException e) {
             throw new DatabaseException("Falha de integridade referencial");
+        }
+    }
+
+    private void copyDtoToEntity(ProductDTO dto, Product entity) {
+        entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
+        entity.setPrice(dto.getPrice());
+        entity.setImgUrl(dto.getImgUrl());
+
+        entity.getCategories().clear();
+        for (CategoryDTO catDto : dto.getCategories()) {
+            Category cat = new Category();
+            cat.setId(catDto.getId());
+            entity.getCategories().add(cat);
         }
     }
 }
